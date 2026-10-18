@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kích hoạt tài khoản | BioLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#c2b6a6] min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center">
+    <div class="w-14 h-14 bg-black text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+      </svg>
+    </div>
+
+    <h2 class="text-2xl font-bold mb-2">Xin chào, <%= username %>!</h2>
+    <p class="text-sm text-gray-600 mb-6">Bạn cần nhập mã kích hoạt (Redeem Key) từ Discord Bot để mở khóa quyền tạo Bio-link.</p>
+
+    <div id="alertBox" class="hidden mb-4 p-3 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-200"></div>
+
+    <form id="redeemForm" class="space-y-4">
+      <div>
+        <input type="text" id="keyInput" placeholder="VD: HASHX-A1B2-C3D4" required
+          class="w-full text-center font-mono uppercase tracking-wider px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black text-base">
+      </div>
+      <button type="submit" id="btnRedeem"
+        class="w-full bg-black text-white font-semibold py-3 rounded-xl hover:bg-gray-800 transition shadow">
+        Kích hoạt ngay
+      </button>
+    </form>
+
+    <div class="mt-6 pt-4 border-t flex justify-between items-center text-xs text-gray-500 font-mono">
+      <span>Dùng lệnh <strong class="text-gray-800">/genkey</strong></span>
+      <a href="/logout" class="text-red-500 hover:text-red-700 transition">Đăng xuất</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('redeemForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const key = document.getElementById('keyInput').value.trim();
+      const btn = document.getElementById('btnRedeem');
+      const alertBox = document.getElementById('alertBox');
+
+      alertBox.classList.add('hidden');
+      alertBox.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Đang kích hoạt...';
+
+      try {
+        const res = await fetch('/api/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alertBox.className = 'mb-4 p-3 rounded-xl text-sm font-medium bg-green-50 text-green-700 border border-green-200 block';
+          alertBox.textContent = 'Kích hoạt thành công! Đang chuyển hướng...';
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 800);
+        } else {
+          alertBox.className = 'mb-4 p-3 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-200 block';
+          alertBox.textContent = data.error || 'Mã kích hoạt không hợp lệ.';
+        }
+      } catch (err) {
+        alertBox.className = 'mb-4 p-3 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-200 block';
+        alertBox.textContent = 'Lỗi kết nối máy chủ.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kích hoạt ngay';
+      }
+    });
+  </script>
+</body>
+</html>

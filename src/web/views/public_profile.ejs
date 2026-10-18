@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= user.username %> | Bio-Link</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-[#c2b6a6] min-h-screen flex items-center justify-center p-4">
+  <div class="bg-[#faecd9] w-full max-w-md rounded-[32px] p-6 shadow-xl text-center relative border border-stone-300">
+    
+    <!-- Avatar & Username -->
+    <img src="<%= user.avatar_url %>" alt="avatar" 
+         onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=HK'"
+         class="w-24 h-24 rounded-full mx-auto border-3 border-white object-cover shadow-sm bg-white">
+    <h1 class="text-xl font-bold font-mono mt-4 text-stone-900">@<%= user.username %></h1>
+    <p class="text-sm text-stone-700 font-mono mt-1 px-4 leading-relaxed"><%= user.bio %></p>
+
+    <!-- Danh sách Link -->
+    <div class="mt-6 flex flex-col gap-3">
+      <% if (links.length === 0) { %>
+        <p class="text-xs text-stone-500 font-mono py-4">Chưa có liên kết nào được chia sẻ.</p>
+      <% } %>
+      <% links.forEach(link => { %>
+        <a href="/click/<%= link.id %>" target="_blank" rel="noopener noreferrer"
+           class="w-full bg-[#f1ddc7] hover:bg-[#e7cdb2] transition py-3 px-4 rounded-full shadow-sm text-center block">
+          <div class="font-mono text-sm font-semibold text-stone-800 truncate"><%= link.title %></div>
+        </a>
+      <% }) %>
+    </div>
+
+    <!-- Nút chân trang -->
+    <div class="mt-10 text-center">
+      <a href="/register" class="inline-block bg-white text-xs px-5 py-2.5 rounded-full font-semibold shadow hover:bg-stone-50 transition border border-stone-200 text-stone-800">
+        ✨ Tạo Bio-link của riêng bạn
+      </a>
+    </div>
+  </div>
+
+  <!-- QR Code góc màn hình desktop ("View on mobile") -->
+  <div class="hidden md:flex flex-col items-center fixed bottom-6 right-6 bg-white/90 backdrop-blur p-3.5 rounded-2xl shadow-xl border border-stone-200">
+    <div id="qrcode"></div>
+    <span class="text-[11px] text-stone-600 mt-2 font-mono font-medium">Quét mã trên điện thoại</span>
+  </div>
+
+  <script>
+    try {
+      new QRCode(document.getElementById("qrcode"), {
+        text: window.location.href,
+        width: 88,
+        height: 88
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  </script>
+</body>
+</html>

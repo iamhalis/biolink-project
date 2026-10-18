@@ -1,0 +1,27 @@
+{
+  "name": "biolink-project",
+  "version": "1.0.0",
+  "main": "src/web/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/web/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@libsql/client": "^0.18.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "discord.js": "^14.27.0",
+    "dotenv": "^18.0.8",
+    "ejs": "^3.1.10",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "zod": "^4.6.7"
+  }
+}
