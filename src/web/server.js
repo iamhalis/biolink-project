@@ -23,6 +23,7 @@ import {
   getLinkById,
   incrementLinkClicks
 } from './db.js';
+import { getIconSvg, detectPlatform, SOCIAL_PRESETS } from './utils/icons.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +40,11 @@ initDb().catch(err => {
 });
 
 const app = express();
+
+// Đăng ký helper và presets cho EJS template
+app.locals.getIconSvg = getIconSvg;
+app.locals.detectPlatform = detectPlatform;
+app.locals.SOCIAL_PRESETS = SOCIAL_PRESETS;
 
 // Trust proxy (cần thiết cho Vercel & rate limiter)
 app.set('trust proxy', 1);
@@ -249,12 +255,24 @@ app.post('/api/profile', authMiddleware, async (req, res) => {
 
 // Thêm liên kết mới
 app.post('/api/links/add', authMiddleware, async (req, res) => {
-  const { title, url } = req.body;
-  if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
-    return res.status(400).send('URL không hợp lệ. Phải bắt đầu bằng http:// hoặc https://');
+  let { title, url, subtitle, icon, type } = req.body;
+  if (!url) {
+    return res.status(400).send('Vui lòng nhập đường dẫn URL.');
   }
 
-  await addLink(req.user.id, title || 'Liên kết mới', url);
+  url = url.trim();
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+
+  await addLink(
+    req.user.id,
+    title || 'Liên kết mới',
+    url,
+    subtitle || '',
+    icon || '',
+    type || 'link'
+  );
   res.redirect('/dashboard');
 });
 

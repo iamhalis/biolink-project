@@ -41,6 +41,9 @@ export async function initDb() {
       user_id INTEGER NOT NULL,
       title TEXT NOT NULL,
       url TEXT NOT NULL,
+      subtitle TEXT DEFAULT '',
+      icon TEXT DEFAULT '',
+      type TEXT DEFAULT 'link',
       clicks INTEGER DEFAULT 0,
       sort_order INTEGER DEFAULT 0,
       FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -53,6 +56,17 @@ export async function initDb() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`
   ]);
+
+  try {
+    await db.execute("ALTER TABLE links ADD COLUMN subtitle TEXT DEFAULT ''");
+  } catch (e) {}
+  try {
+    await db.execute("ALTER TABLE links ADD COLUMN icon TEXT DEFAULT ''");
+  } catch (e) {}
+  try {
+    await db.execute("ALTER TABLE links ADD COLUMN type TEXT DEFAULT 'link'");
+  } catch (e) {}
+
   isInitialized = true;
 }
 
@@ -132,11 +146,11 @@ export async function getLinksByUserId(userId) {
   return result.rows;
 }
 
-export async function addLink(userId, title, url) {
+export async function addLink(userId, title, url, subtitle = '', icon = '', type = 'link') {
   await initDb();
   await db.execute({
-    sql: 'INSERT INTO links (user_id, title, url) VALUES (?, ?, ?)',
-    args: [userId, title.trim(), url.trim()]
+    sql: 'INSERT INTO links (user_id, title, url, subtitle, icon, type) VALUES (?, ?, ?, ?, ?, ?)',
+    args: [userId, title.trim(), url.trim(), (subtitle || '').trim(), (icon || '').trim(), type || 'link']
   });
 }
 

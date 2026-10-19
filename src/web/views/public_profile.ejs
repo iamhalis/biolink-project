@@ -8,31 +8,97 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-[#c2b6a6] min-h-screen flex items-center justify-center p-4">
-  <div class="bg-[#faecd9] w-full max-w-md rounded-[32px] p-6 shadow-xl text-center relative border border-stone-300">
+  <div class="bg-[#faecd9] w-full max-w-md rounded-[38px] p-6 shadow-2xl relative border border-stone-300 flex flex-col items-center">
     
-    <!-- Avatar & Username -->
-    <img src="<%= user.avatar_url %>" alt="avatar" 
-         onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=HK'"
-         class="w-24 h-24 rounded-full mx-auto border-3 border-white object-cover shadow-sm bg-white">
-    <h1 class="text-xl font-bold font-mono mt-4 text-stone-900">@<%= user.username %></h1>
-    <p class="text-sm text-stone-700 font-mono mt-1 px-4 leading-relaxed"><%= user.bio %></p>
+    <!-- Top Header Bar (Khớp ảnh mẫu: biểu tượng hoa trái, nút Subscribe & Share phải) -->
+    <div class="flex items-center justify-between w-full mb-4 px-1">
+      <div class="w-8 h-8 rounded-full bg-white/70 border border-stone-300/60 flex items-center justify-center text-stone-800 text-sm shadow-sm select-none">
+        ✻
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="copyPageUrl()" class="text-xs bg-white hover:bg-stone-50 text-stone-800 px-4 py-1.5 rounded-full shadow-sm border border-stone-300/70 font-mono font-medium transition cursor-pointer">
+          Subscribe
+        </button>
+        <button onclick="copyPageUrl()" title="Chia sẻ trang" class="w-8 h-8 rounded-full bg-white hover:bg-stone-50 text-stone-800 flex items-center justify-center shadow-sm border border-stone-300/70 transition cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
 
-    <!-- Danh sách Link -->
-    <div class="mt-6 flex flex-col gap-3">
-      <% if (links.length === 0) { %>
-        <p class="text-xs text-stone-500 font-mono py-4">Chưa có liên kết nào được chia sẻ.</p>
+    <!-- Avatar -->
+    <div class="relative mt-2">
+      <img src="<%= user.avatar_url %>" alt="<%= user.username %>" 
+           onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=HK'"
+           class="w-24 h-24 rounded-full border-2 border-white object-cover shadow-md bg-white">
+    </div>
+
+    <!-- Username & Bio -->
+    <h1 class="text-xl font-bold font-mono mt-3.5 text-stone-900 tracking-tight">
+      <%= user.username %>
+    </h1>
+    <p class="text-xs text-stone-700 font-mono mt-1 px-4 leading-relaxed text-center">
+      <%= user.bio %>
+    </p>
+
+    <% 
+      // Phân loại: Links hiển thị dạng icon MXH ở trên và Links hiển thị dạng Thẻ nút bên dưới
+      const socialLinks = links.filter(l => l.type === 'social');
+      const customLinks = links.filter(l => l.type !== 'social');
+    %>
+
+    <!-- Hàng Icon Mạng Xã Hội (Facebook, TikTok, Discord...) -->
+    <% if (socialLinks.length > 0) { %>
+      <div class="flex items-center justify-center flex-wrap gap-3.5 my-4">
+        <% socialLinks.forEach(item => { %>
+          <a href="/click/<%= item.id %>" target="_blank" rel="noopener noreferrer" title="<%= item.title %>"
+             class="w-9 h-9 rounded-full bg-stone-900 text-[#faecd9] flex items-center justify-center hover:scale-110 hover:bg-black transition-all shadow-sm">
+            <%- getIconSvg(item.icon, item.url, 'w-4 h-4') %>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <!-- Danh sách Thẻ Liên Kết (Cards) -->
+    <div class="w-full mt-2 flex flex-col gap-3">
+      <% if (customLinks.length === 0 && socialLinks.length === 0) { %>
+        <p class="text-xs text-stone-500 font-mono py-6 text-center">Chưa có liên kết nào được chia sẻ.</p>
       <% } %>
-      <% links.forEach(link => { %>
+
+      <% customLinks.forEach(link => { %>
         <a href="/click/<%= link.id %>" target="_blank" rel="noopener noreferrer"
-           class="w-full bg-[#f1ddc7] hover:bg-[#e7cdb2] transition py-3 px-4 rounded-full shadow-sm text-center block">
-          <div class="font-mono text-sm font-semibold text-stone-800 truncate"><%= link.title %></div>
+           class="w-full bg-[#f1ddc7] hover:bg-[#ebd0b4] transition-all py-3.5 px-5 rounded-full shadow-sm flex items-center justify-between group border border-stone-300/60">
+          <!-- Icon bên trái (nếu có) hoặc để trống để cân bằng -->
+          <div class="w-6 flex items-center justify-start text-stone-800 flex-shrink-0">
+            <% if (link.icon && link.icon !== 'custom') { %>
+              <%- getIconSvg(link.icon, link.url, 'w-4 h-4') %>
+            <% } %>
+          </div>
+
+          <!-- Nội dung Tiêu đề & Mô tả phụ ở giữa -->
+          <div class="text-center flex-1 min-w-0 px-2">
+            <div class="font-mono text-sm font-bold text-stone-900 truncate"><%= link.title %></div>
+            <% if (link.subtitle) { %>
+              <div class="font-mono text-[11px] text-stone-600 truncate mt-0.5"><%= link.subtitle %></div>
+            <% } %>
+          </div>
+
+          <!-- Nút 3 chấm bên phải (giống hệt ảnh mẫu) -->
+          <div class="w-6 text-right text-stone-400 group-hover:text-stone-700 transition flex-shrink-0">
+            <svg class="w-4 h-4 inline-block" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="5" r="1.75"/>
+              <circle cx="12" cy="12" r="1.75"/>
+              <circle cx="12" cy="19" r="1.75"/>
+            </svg>
+          </div>
         </a>
       <% }) %>
     </div>
 
     <!-- Nút chân trang -->
-    <div class="mt-10 text-center">
-      <a href="/register" class="inline-block bg-white text-xs px-5 py-2.5 rounded-full font-semibold shadow hover:bg-stone-50 transition border border-stone-200 text-stone-800">
+    <div class="mt-8 mb-2 text-center">
+      <a href="/register" class="inline-block bg-white text-xs px-5 py-2.5 rounded-full font-semibold shadow-sm hover:bg-stone-50 transition border border-stone-200 text-stone-800">
         ✨ Tạo Bio-link của riêng bạn
       </a>
     </div>
@@ -44,7 +110,21 @@
     <span class="text-[11px] text-stone-600 mt-2 font-mono font-medium">Quét mã trên điện thoại</span>
   </div>
 
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-stone-900 text-white text-xs font-mono px-4 py-2 rounded-full opacity-0 pointer-events-none transition-all duration-300 shadow-lg">
+    Đã sao chép liên kết trang!
+  </div>
+
   <script>
+    function copyPageUrl() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'pointer-events-none');
+        }, 2000);
+      });
+    }
+
     try {
       new QRCode(document.getElementById("qrcode"), {
         text: window.location.href,

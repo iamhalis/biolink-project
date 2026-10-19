@@ -58,7 +58,7 @@
           <div>
             <label class="block text-xs font-semibold text-gray-600 mb-1 font-mono">TIỂU SỬ (BIO)</label>
             <input type="text" name="bio" value="<%= user.bio %>" required
-              placeholder="VD: Content Creator / Developer..."
+              placeholder="VD: Owner: HK Community"
               class="w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black">
           </div>
           <div class="flex justify-end">
@@ -71,54 +71,154 @@
 
       <!-- Box 2: Quản lý liên kết (Links) -->
       <div class="bg-white p-6 rounded-3xl shadow-sm border border-stone-200 space-y-6">
-        <h2 class="text-base font-bold font-mono text-gray-900">🔗 Danh sách liên kết</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-bold font-mono text-gray-900">🔗 Thêm mạng xã hội & liên kết</h2>
+        </div>
 
-        <!-- Form thêm Link mới -->
-        <form action="/api/links/add" method="POST" class="space-y-3 bg-[#faecd9]/50 p-4 rounded-2xl border border-stone-200">
-          <h3 class="font-semibold text-xs font-mono uppercase text-stone-700">+ Thêm liên kết mới</h3>
+        <!-- Form thêm Link mới với bộ chọn MXH -->
+        <div class="bg-[#faecd9]/60 p-5 rounded-2xl border border-stone-300/70 space-y-4">
           <div>
-            <input type="text" name="title" placeholder="Tiêu đề (VD: Facebook cá nhân, YouTube, Shopee...)" required 
-              class="w-full px-3 py-2 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-semibold text-xs font-mono uppercase text-stone-700">1. Chọn nhanh dịch vụ:</span>
+              <span id="current-preset-label" class="text-xs font-mono font-medium text-stone-600 bg-white px-2 py-0.5 rounded-md border border-stone-200">
+                Đang chọn: TikTok
+              </span>
+            </div>
+
+            <!-- Các nút bấm MXH có sẵn -->
+            <div class="flex flex-wrap gap-1.5" id="preset-buttons">
+              <% SOCIAL_PRESETS.forEach((p, idx) => { %>
+                <button type="button" 
+                  onclick="selectPreset('<%= p.id %>')" 
+                  data-preset-id="<%= p.id %>"
+                  class="preset-btn px-2.5 py-1.5 rounded-xl border border-stone-300 text-xs font-mono flex items-center gap-1.5 bg-white hover:bg-stone-100 transition shadow-2xs cursor-pointer <%= idx === 0 ? 'bg-black text-white border-black font-semibold ring-2 ring-stone-400' : 'text-stone-700' %>">
+                  <span class="w-4 h-4 flex items-center justify-center">
+                    <%- getIconSvg(p.id, '', 'w-3.5 h-3.5') %>
+                  </span>
+                  <span><%= p.name %></span>
+                </button>
+              <% }) %>
+              
+              <button type="button" 
+                onclick="selectPreset('custom')" 
+                data-preset-id="custom"
+                class="preset-btn px-2.5 py-1.5 rounded-xl border border-stone-300 text-xs font-mono flex items-center gap-1.5 bg-white text-stone-700 hover:bg-stone-100 transition shadow-2xs cursor-pointer">
+                <span>🌐 Tùy chỉnh (Khác)</span>
+              </button>
+            </div>
           </div>
-          <div>
-            <input type="url" name="url" placeholder="Đường dẫn (https://...)" required 
-              class="w-full px-3 py-2 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
-          </div>
-          <div class="flex justify-end">
-            <button type="submit" class="bg-black text-white text-xs font-semibold px-5 py-2.5 rounded-xl hover:bg-stone-800 transition shadow">
-              + Thêm liên kết
-            </button>
-          </div>
-        </form>
+
+          <!-- Form nhập liệu -->
+          <form action="/api/links/add" method="POST" id="link-form" class="space-y-3 pt-2 border-t border-stone-200/80">
+            <input type="hidden" name="icon" id="input-icon" value="tiktok">
+            <input type="hidden" name="url" id="input-url" value="">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-stone-700 mb-1 font-mono">TIÊU ĐỀ LIÊN KẾT</label>
+                <input type="text" name="title" id="input-title" value="TikTok" required 
+                  placeholder="VD: TikTok, Facebook cá nhân..."
+                  class="w-full px-3 py-2 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-stone-700 mb-1 font-mono">KIỂU HIỂN THỊ</label>
+                <select name="type" id="input-type" onchange="handleTypeChange()" class="w-full px-3 py-2 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black font-mono">
+                  <option value="social">🌟 Hàng Icon MXH (ở đầu hồ sơ)</option>
+                  <option value="link">🔲 Thẻ liên kết dài (ở danh sách dưới)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Khung nhập Username / Handle (khi chọn MXH có sẵn) -->
+            <div id="wrapper-username">
+              <label class="block text-xs font-semibold text-stone-700 mb-1 font-mono">
+                TÊN TÀI KHOẢN (USERNAME / ID)
+              </label>
+              <div class="flex items-center rounded-xl border border-stone-300 bg-white overflow-hidden focus-within:ring-2 focus-within:ring-black">
+                <span id="prefix-label" class="px-3 py-2 bg-stone-100 text-xs font-mono text-stone-600 border-r border-stone-300 select-none">
+                  tiktok.com/@
+                </span>
+                <input type="text" id="input-username" placeholder="iamhalis (chỉ cần gõ tên)" 
+                  class="flex-1 px-3 py-2 text-sm bg-white focus:outline-none font-mono">
+              </div>
+              <p class="text-[11px] text-stone-500 font-mono mt-1">
+                💡 Chỉ cần gõ username (ví dụ: <code class="text-stone-800 font-bold">iamhalis</code>). Nếu lỡ dán cả link hệ thống sẽ tự động lọc chuẩn.
+              </p>
+            </div>
+
+            <!-- Khung nhập URL trực tiếp (khi chọn Tùy chỉnh) -->
+            <div id="wrapper-custom-url" class="hidden">
+              <label class="block text-xs font-semibold text-stone-700 mb-1 font-mono">ĐƯỜNG DẪN ĐẦY ĐỦ (URL)</label>
+              <input type="text" id="input-raw-url" placeholder="https://example.com"
+                class="w-full px-3 py-2 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black font-mono">
+            </div>
+
+            <!-- Khung nhập mô tả phụ (chỉ khi chọn Thẻ liên kết dài) -->
+            <div id="wrapper-subtitle" class="hidden">
+              <label class="block text-xs font-semibold text-stone-700 mb-1 font-mono">MÔ TẢ PHỤ (SUBTITLE - KHÔNG BẮT BUỘC)</label>
+              <input type="text" name="subtitle" id="input-subtitle" placeholder="VD: Discord Server • Free to join"
+                class="w-full px-3 py-2 border rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-black font-mono">
+            </div>
+
+            <!-- Preview Link URL đang tạo -->
+            <div class="p-2.5 rounded-xl bg-white/70 border border-stone-200 text-xs font-mono text-stone-700 flex items-center justify-between">
+              <span class="text-stone-500">Link hoàn chỉnh:</span>
+              <span id="url-preview" class="font-bold text-stone-900 truncate max-w-xs md:max-w-md">https://www.tiktok.com/@</span>
+            </div>
+
+            <div class="flex justify-end pt-1">
+              <button type="submit" class="bg-black text-white text-xs font-semibold px-5 py-2.5 rounded-xl hover:bg-stone-800 transition shadow cursor-pointer">
+                + Thêm liên kết vào hồ sơ
+              </button>
+            </div>
+          </form>
+        </div>
 
         <!-- Danh sách Links hiện tại -->
         <div class="space-y-3">
           <div class="flex justify-between items-center text-xs font-mono text-stone-500">
-            <span>TẤT CẢ LIÊN KẾT (<%= links.length %>)</span>
+            <span>TẤT CẢ LIÊN KẾT ĐÃ THÊM (<%= links.length %>)</span>
           </div>
 
           <% if (links.length === 0) { %>
             <div class="text-center py-8 bg-stone-50 rounded-2xl border border-dashed border-stone-300">
               <p class="text-sm text-stone-500 font-mono">Chưa có liên kết nào.</p>
-              <p class="text-xs text-stone-400 mt-1">Hãy nhập tiêu đề & URL vào form ở trên để thêm liên kết đầu tiên!</p>
+              <p class="text-xs text-stone-400 mt-1">Hãy bấm chọn một mạng xã hội ở trên và gõ tên để thêm ngay!</p>
             </div>
           <% } %>
 
           <% links.forEach(link => { %>
             <div class="flex items-center justify-between p-4 bg-white border border-stone-200 rounded-2xl shadow-sm hover:border-stone-400 transition group">
-              <div class="min-w-0 pr-4">
-                <div class="font-semibold text-sm text-gray-900 truncate"><%= link.title %></div>
-                <a href="<%= link.url %>" target="_blank" class="text-xs text-stone-500 hover:text-stone-800 font-mono truncate block max-w-xs md:max-w-md">
-                  <%= link.url %> ↗
-                </a>
+              <div class="flex items-center gap-3 min-w-0 pr-4">
+                <div class="w-9 h-9 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center flex-shrink-0 text-stone-800">
+                  <%- getIconSvg(link.icon, link.url, 'w-4 h-4') %>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-sm text-gray-900 truncate"><%= link.title %></span>
+                    <% if (link.type === 'social') { %>
+                      <span class="text-[10px] bg-stone-900 text-stone-100 font-mono px-2 py-0.5 rounded-full">Icon MXH</span>
+                    <% } else { %>
+                      <span class="text-[10px] bg-stone-200 text-stone-700 font-mono px-2 py-0.5 rounded-full">Thẻ nút</span>
+                    <% } %>
+                  </div>
+                  <% if (link.subtitle) { %>
+                    <div class="text-[11px] text-stone-500 font-mono truncate"><%= link.subtitle %></div>
+                  <% } %>
+                  <a href="<%= link.url %>" target="_blank" class="text-xs text-stone-500 hover:text-stone-800 font-mono truncate block max-w-xs md:max-w-md">
+                    <%= link.url %> ↗
+                  </a>
+                </div>
               </div>
+
               <div class="flex items-center gap-2 flex-shrink-0">
                 <span class="text-xs font-semibold text-stone-600 bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full font-mono">
                   <%= link.clicks %> clicks
                 </span>
                 <form action="/api/links/<%= link.id %>/delete" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa liên kết này?');">
                   <button type="submit" title="Xóa liên kết"
-                    class="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                    class="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
@@ -134,28 +234,72 @@
     <!-- CỘT PHẢI: Khung mô phỏng điện thoại Live Preview (5 cột) -->
     <div class="lg:col-span-5 flex flex-col items-center">
       <div class="sticky top-20">
-        <div class="w-[310px] h-[620px] bg-black rounded-[48px] p-3 shadow-2xl border-4 border-neutral-800">
+        <div class="w-[320px] h-[640px] bg-black rounded-[48px] p-3 shadow-2xl border-4 border-neutral-800 flex flex-col">
           <div class="w-full h-full bg-[#faecd9] rounded-[38px] overflow-y-auto p-4 flex flex-col items-center text-center">
-            <!-- Màn hình điện thoại -->
+            
+            <!-- Header điện thoại giả lập -->
+            <div class="flex items-center justify-between w-full mb-2 px-1">
+              <div class="w-6 h-6 rounded-full bg-white/70 border border-stone-300 flex items-center justify-center text-[10px] text-stone-800">
+                ✻
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] bg-white text-stone-800 px-2.5 py-0.5 rounded-full border border-stone-200 font-mono font-medium">
+                  Subscribe
+                </span>
+                <span class="w-6 h-6 rounded-full bg-white text-stone-800 flex items-center justify-center border border-stone-200 text-[10px]">
+                  ↑
+                </span>
+              </div>
+            </div>
+
+            <!-- Avatar -->
             <img src="<%= user.avatar_url %>" alt="avatar" 
                  onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=HK'"
-                 class="w-20 h-20 rounded-full border-2 border-white object-cover mt-4 shadow-sm bg-white">
+                 class="w-20 h-20 rounded-full border-2 border-white object-cover mt-2 shadow-sm bg-white">
             <h4 class="font-bold text-sm font-mono mt-2 text-stone-900"><%= user.username %></h4>
-            <p class="text-xs text-stone-600 font-mono mb-4 px-2 leading-relaxed"><%= user.bio %></p>
+            <p class="text-xs text-stone-600 font-mono mb-2 px-2 leading-relaxed"><%= user.bio %></p>
 
-            <div class="w-full space-y-2 mt-1">
-              <% if (links.length === 0) { %>
+            <% 
+              const previewSocials = links.filter(l => l.type === 'social');
+              const previewCards = links.filter(l => l.type !== 'social');
+            %>
+
+            <!-- Hàng Icon MXH mô phỏng -->
+            <% if (previewSocials.length > 0) { %>
+              <div class="flex items-center justify-center flex-wrap gap-2.5 my-2">
+                <% previewSocials.forEach(item => { %>
+                  <div class="w-7 h-7 rounded-full bg-stone-900 text-[#faecd9] flex items-center justify-center shadow-xs">
+                    <%- getIconSvg(item.icon, item.url, 'w-3.5 h-3.5') %>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+
+            <!-- Thẻ nút mô phỏng -->
+            <div class="w-full space-y-2 mt-2">
+              <% if (previewCards.length === 0 && previewSocials.length === 0) { %>
                 <div class="text-[11px] text-stone-400 italic py-4">Các liên kết của bạn sẽ hiển thị ở đây</div>
               <% } %>
-              <% links.forEach(link => { %>
-                <a href="/click/<%= link.id %>" target="_blank" 
-                   class="w-full bg-[#f1ddc7] hover:bg-[#e6d0b8] transition py-2.5 px-3 rounded-full text-xs font-mono font-semibold text-stone-800 truncate shadow-sm block text-center">
-                  <%= link.title %>
-                </a>
+              
+              <% previewCards.forEach(link => { %>
+                <div class="w-full bg-[#f1ddc7] py-2.5 px-3 rounded-full shadow-2xs flex items-center justify-between border border-stone-300/40">
+                  <div class="w-4 text-stone-700 flex-shrink-0">
+                    <% if (link.icon && link.icon !== 'custom') { %>
+                      <%- getIconSvg(link.icon, link.url, 'w-3 h-3') %>
+                    <% } %>
+                  </div>
+                  <div class="text-center flex-1 min-w-0 px-1">
+                    <div class="text-xs font-mono font-semibold text-stone-800 truncate"><%= link.title %></div>
+                    <% if (link.subtitle) { %>
+                      <div class="text-[9px] font-mono text-stone-500 truncate"><%= link.subtitle %></div>
+                    <% } %>
+                  </div>
+                  <div class="w-4 text-right text-[10px] text-stone-400 flex-shrink-0">⋮</div>
+                </div>
               <% }) %>
             </div>
 
-            <div class="mt-auto pt-6 text-[10px] text-stone-400 font-mono">
+            <div class="mt-auto pt-4 text-[10px] text-stone-400 font-mono">
               BioLink by <%= user.username %>
             </div>
           </div>
@@ -164,5 +308,126 @@
       </div>
     </div>
   </main>
+
+  <!-- Script xử lý chọn MXH & tự động điền Link -->
+  <script>
+    const PRESETS = <%- JSON.stringify(SOCIAL_PRESETS) %>;
+    let selectedPresetId = 'tiktok';
+
+    const inputIcon = document.getElementById('input-icon');
+    const inputTitle = document.getElementById('input-title');
+    const inputType = document.getElementById('input-type');
+    const inputUsername = document.getElementById('input-username');
+    const inputRawUrl = document.getElementById('input-raw-url');
+    const inputUrl = document.getElementById('input-url');
+    const inputSubtitle = document.getElementById('input-subtitle');
+    const prefixLabel = document.getElementById('prefix-label');
+    const urlPreview = document.getElementById('url-preview');
+    const wrapperUsername = document.getElementById('wrapper-username');
+    const wrapperCustomUrl = document.getElementById('wrapper-custom-url');
+    const wrapperSubtitle = document.getElementById('wrapper-subtitle');
+    const currentPresetLabel = document.getElementById('current-preset-label');
+
+    function selectPreset(presetId) {
+      selectedPresetId = presetId;
+
+      // Cập nhật giao diện nút preset
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        if (btn.getAttribute('data-preset-id') === presetId) {
+          btn.className = "preset-btn px-2.5 py-1.5 rounded-xl border border-black text-xs font-mono flex items-center gap-1.5 bg-black text-white font-semibold ring-2 ring-stone-400 transition shadow-2xs cursor-pointer";
+        } else {
+          btn.className = "preset-btn px-2.5 py-1.5 rounded-xl border border-stone-300 text-xs font-mono flex items-center gap-1.5 bg-white text-stone-700 hover:bg-stone-100 transition shadow-2xs cursor-pointer";
+        }
+      });
+
+      if (presetId === 'custom') {
+        currentPresetLabel.textContent = 'Đang chọn: Tùy chỉnh (Khác)';
+        inputIcon.value = 'custom';
+        inputTitle.value = '';
+        inputTitle.placeholder = 'VD: Kênh của tôi, Gemini Pro, Roblox Community...';
+        inputType.value = 'link';
+        wrapperUsername.classList.add('hidden');
+        wrapperCustomUrl.classList.remove('hidden');
+        handleTypeChange();
+        updateCustomUrl();
+      } else {
+        const preset = PRESETS.find(p => p.id === presetId);
+        if (!preset) return;
+
+        currentPresetLabel.textContent = 'Đang chọn: ' + preset.name;
+        inputIcon.value = preset.id;
+        inputTitle.value = preset.name;
+        inputType.value = preset.defaultType || 'social';
+        prefixLabel.textContent = preset.displayPrefix;
+        inputUsername.placeholder = preset.placeholder;
+        wrapperUsername.classList.remove('hidden');
+        wrapperCustomUrl.classList.add('hidden');
+        handleTypeChange();
+        updateGeneratedUrl();
+      }
+    }
+
+    // Xử lý tự động bóc tách username và tạo URL hoàn chỉnh
+    function updateGeneratedUrl() {
+      if (selectedPresetId === 'custom') return;
+      const preset = PRESETS.find(p => p.id === selectedPresetId);
+      if (!preset) return;
+
+      let val = inputUsername.value.trim();
+
+      // Thông minh: nếu người dùng dán cả URL vào ô username, tự động làm sạch
+      if (val.includes('http://') || val.includes('https://') || val.includes('.com') || val.includes('.gg') || val.includes('.me') || val.includes('.net')) {
+        // Loại bỏ domain và tiền tố
+        val = val.replace(/^https?:\/\//i, '');
+        val = val.replace(/^www\./i, '');
+        val = val.replace(new RegExp('^' + preset.displayPrefix.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'), 'i'), '');
+        val = val.replace(new RegExp('^' + preset.id + '\\.[a-z]+(\\/@|\\/)?', 'i'), '');
+        val = val.replace(/^@/, '');
+        val = val.split('/')[0].split('?')[0]; // Lấy phần định danh chính
+        inputUsername.value = val;
+      } else if (val.startsWith('@')) {
+        val = val.substring(1);
+        inputUsername.value = val;
+      }
+
+      let finalUrl = '';
+      if (val) {
+        if (preset.suffix) {
+          finalUrl = preset.prefix + val + preset.suffix;
+        } else {
+          finalUrl = preset.prefix + val;
+        }
+      } else {
+        finalUrl = preset.prefix;
+      }
+
+      inputUrl.value = finalUrl;
+      urlPreview.textContent = finalUrl;
+    }
+
+    function updateCustomUrl() {
+      let raw = inputRawUrl.value.trim();
+      if (raw && !raw.startsWith('http://') && !raw.startsWith('https://')) {
+        raw = 'https://' + raw;
+      }
+      inputUrl.value = raw;
+      urlPreview.textContent = raw || 'https://...';
+    }
+
+    function handleTypeChange() {
+      if (inputType.value === 'link') {
+        wrapperSubtitle.classList.remove('hidden');
+      } else {
+        wrapperSubtitle.classList.add('hidden');
+      }
+    }
+
+    inputUsername.addEventListener('input', updateGeneratedUrl);
+    inputUsername.addEventListener('paste', () => setTimeout(updateGeneratedUrl, 50));
+    inputRawUrl.addEventListener('input', updateCustomUrl);
+
+    // Khởi tạo mặc định chọn TikTok
+    selectPreset('tiktok');
+  </script>
 </body>
 </html>
