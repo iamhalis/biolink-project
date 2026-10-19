@@ -4,7 +4,7 @@ export const SOCIAL_PRESETS = [
     name: 'TikTok',
     prefix: 'https://www.tiktok.com/@',
     displayPrefix: 'tiktok.com/@',
-    placeholder: 'iamhalis (tên người dùng)',
+    placeholder: 'username',
     defaultType: 'social'
   },
   {
@@ -12,7 +12,7 @@ export const SOCIAL_PRESETS = [
     name: 'Facebook',
     prefix: 'https://facebook.com/',
     displayPrefix: 'facebook.com/',
-    placeholder: 'iamhalis (username hoặc ID)',
+    placeholder: 'username or id',
     defaultType: 'social'
   },
   {
@@ -20,7 +20,7 @@ export const SOCIAL_PRESETS = [
     name: 'Discord',
     prefix: 'https://discord.gg/',
     displayPrefix: 'discord.gg/',
-    placeholder: 'ma-moi-server (hoặc discord.com/users/ID)',
+    placeholder: 'server invite (or discord.com/users/ID)',
     defaultType: 'social'
   },
   {
@@ -28,7 +28,7 @@ export const SOCIAL_PRESETS = [
     name: 'Instagram',
     prefix: 'https://instagram.com/',
     displayPrefix: 'instagram.com/',
-    placeholder: 'iamhalis (tên người dùng)',
+    placeholder: 'username',
     defaultType: 'social'
   },
   {
@@ -36,7 +36,7 @@ export const SOCIAL_PRESETS = [
     name: 'YouTube',
     prefix: 'https://youtube.com/@',
     displayPrefix: 'youtube.com/@',
-    placeholder: 'iamhalis (handle hoặc tên kênh)',
+    placeholder: 'username',
     defaultType: 'social'
   },
   {
@@ -44,7 +44,7 @@ export const SOCIAL_PRESETS = [
     name: 'Telegram',
     prefix: 'https://t.me/',
     displayPrefix: 't.me/',
-    placeholder: 'iamhalis (username)',
+    placeholder: 'username',
     defaultType: 'social'
   },
   {
@@ -52,7 +52,7 @@ export const SOCIAL_PRESETS = [
     name: 'X (Twitter)',
     prefix: 'https://x.com/',
     displayPrefix: 'x.com/',
-    placeholder: 'iamhalis (username)',
+    placeholder: 'username',
     defaultType: 'social'
   },
   {
@@ -60,7 +60,7 @@ export const SOCIAL_PRESETS = [
     name: 'GitHub',
     prefix: 'https://github.com/',
     displayPrefix: 'github.com/',
-    placeholder: 'iamhalis (username)',
+    placeholder: 'username',
     defaultType: 'social'
   },
   {
@@ -68,7 +68,7 @@ export const SOCIAL_PRESETS = [
     name: 'Roblox',
     prefix: 'https://www.roblox.com/users/',
     displayPrefix: 'roblox.com/users/',
-    placeholder: 'User ID (VD: 34567890)',
+    placeholder: 'User ID (e.g., 34567890)',
     defaultType: 'link'
   },
   {
@@ -76,7 +76,7 @@ export const SOCIAL_PRESETS = [
     name: 'Threads',
     prefix: 'https://threads.net/@',
     displayPrefix: 'threads.net/@',
-    placeholder: 'iamhalis (username)',
+    placeholder: 'username',
     defaultType: 'social'
   }
 ];
