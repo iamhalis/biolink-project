@@ -300,7 +300,7 @@ app.get('/click/:linkId', async (req, res) => {
   res.redirect('/');
 });
 
-// Trang cá nhân công khai (vd: localhost:3000/iamhalis)
+// Trang cá nhân công khai (vd: localhost:3000/username)
 app.get('/:username', async (req, res) => {
   const cleanUsername = (req.params.username || '').toLowerCase().trim();
   if (RESERVED_USERNAMES.includes(cleanUsername)) {

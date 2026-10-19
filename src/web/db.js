@@ -32,7 +32,7 @@ export async function initDb() {
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       bio TEXT DEFAULT 'Welcome to my profile',
-      avatar_url TEXT DEFAULT 'https://api.dicebear.com/7.x/bottts/svg?seed=HK',
+      avatar_url TEXT DEFAULT 'https://api.dicebear.com/7.x/bottts/svg?seed=avatar',
       is_activated INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`,

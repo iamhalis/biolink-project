@@ -30,7 +30,7 @@
     <!-- Avatar -->
     <div class="relative mt-2">
       <img src="<%= user.avatar_url %>" alt="<%= user.username %>" 
-           onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=HK'"
+           onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=<%= user.username %>'"
            class="w-24 h-24 rounded-full border-2 border-white object-cover shadow-md bg-white">
     </div>
 
