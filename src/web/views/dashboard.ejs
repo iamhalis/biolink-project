@@ -310,8 +310,11 @@
   </main>
 
   <!-- Script xử lý chọn MXH & tự động điền Link -->
+  <script type="application/json" id="presets-data">
+    <%- JSON.stringify(SOCIAL_PRESETS) %>
+  </script>
   <script>
-    const PRESETS = <%- JSON.stringify(SOCIAL_PRESETS) %>;
+    const PRESETS = JSON.parse(document.getElementById('presets-data').textContent);
     let selectedPresetId = 'tiktok';
 
     const inputIcon = document.getElementById('input-icon');
