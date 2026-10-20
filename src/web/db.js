@@ -178,3 +178,39 @@ export async function incrementLinkClicks(linkId) {
     args: [linkId]
   });
 }
+
+export async function checkKeyValidity(key) {
+  await initDb();
+  const code = (key || '').trim().toUpperCase();
+  const result = await db.execute({
+    sql: 'SELECT * FROM redeem_keys WHERE code = ?',
+    args: [code]
+  });
+  const row = result.rows[0];
+  if (!row) {
+    return { valid: false, error: 'Key không tồn tại trên hệ thống.' };
+  }
+  if (row.is_used) {
+    return { valid: false, error: 'Key này đã được sử dụng trước đó.' };
+  }
+  return { valid: true, key: row.code };
+}
+
+export async function redeemKeyForExternalApp(key, appIdentifier = 'Halios') {
+  await initDb();
+  const code = (key || '').trim().toUpperCase();
+  const result = await db.execute({
+    sql: 'SELECT * FROM redeem_keys WHERE code = ? AND is_used = 0',
+    args: [code]
+  });
+  const row = result.rows[0];
+  if (!row) {
+    throw new Error('Key không hợp lệ hoặc đã qua sử dụng.');
+  }
+  await db.execute({
+    sql: 'UPDATE redeem_keys SET is_used = 1, used_by = ? WHERE id = ?',
+    args: [appIdentifier, row.id]
+  });
+  return true;
+}
+

@@ -17,6 +17,8 @@ import {
   updateUserProfile,
   activateUserWithKey,
   createRedeemKey,
+  checkKeyValidity,
+  redeemKeyForExternalApp,
   getLinksByUserId,
   addLink,
   deleteLink,
@@ -48,6 +50,17 @@ app.locals.SOCIAL_PRESETS = SOCIAL_PRESETS;
 
 // Trust proxy (cần thiết cho Vercel & rate limiter)
 app.set('trust proxy', 1);
+
+// Cấu hình CORS cho /api để các ứng dụng/web khác (như Halios) có thể gọi
+app.use('/api', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // Cấu hình Middleware & Views
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -218,7 +231,7 @@ app.post('/api/redeem', authLimiter, authMiddleware, async (req, res) => {
   }
 });
 
-// ==================== CỔNG API CHO BOT DISCORD ====================
+// ==================== CỔNG API CHO BOT DISCORD & ỨNG DỤNG NGOÀI ====================
 
 app.post('/api/admin/generate-key', async (req, res) => {
   const apiKey = req.headers['x-api-key'];
@@ -230,6 +243,34 @@ app.post('/api/admin/generate-key', async (req, res) => {
   await createRedeemKey(rawKey);
 
   return res.json({ key: rawKey });
+});
+
+// API kiểm tra tính hợp lệ của key (dành cho website khác như Halios)
+app.post('/api/external/verify-key', async (req, res) => {
+  try {
+    const { key } = req.body;
+    if (!key) return res.status(400).json({ valid: false, error: 'Chưa cung cấp mã key.' });
+    const result = await checkKeyValidity(key);
+    if (!result.valid) {
+      return res.status(400).json(result);
+    }
+    return res.json(result);
+  } catch (err) {
+    console.error('Lỗi verify-key:', err);
+    return res.status(500).json({ valid: false, error: 'Lỗi máy chủ khi kiểm tra key.' });
+  }
+});
+
+// API kích hoạt (sử dụng) key từ website khác như Halios
+app.post('/api/external/redeem-key', async (req, res) => {
+  try {
+    const { key, app_name } = req.body;
+    if (!key) return res.status(400).json({ success: false, error: 'Chưa cung cấp mã key.' });
+    await redeemKeyForExternalApp(key, app_name || 'Halios');
+    return res.json({ success: true, message: 'Kích hoạt thành công!' });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message || 'Key không hợp lệ hoặc đã qua sử dụng.' });
+  }
 });
 
 // ==================== DASHBOARD & QUẢN LÝ ====================
